@@ -1,0 +1,41 @@
+# Copyright (c) 2014 David Heidelberger <david.heidelberger@ixit.cz>
+# Distributed under the terms of the GNU General Public License v2
+
+SUMMARY="LILO (Linux Loader)"
+
+UPSTREAM_DOCUMENTATION="
+    http://lilo.alioth.debian.org/             [[ description = [ LILO Official pages ] ]]
+"
+
+DOWNLOADS="http://lilo.alioth.debian.org/ftp/sources/${PNV}.tar.gz"
+LICENCES="BSD GPL-2"
+SLOT="0"
+PLATFORMS="~amd64 ~x86"
+MYOPTIONS="
+    device-mapper [[ description = [ Ability to detect and use device-mapper devices ] ]]
+"
+
+DEPENDENCIES="
+    build:
+        sys-devel/dev86
+    build+run:
+        device-mapper? ( sys-fs/lvm2 )
+"
+DEFAULT_SRC_COMPILE_PARAMS=( all )
+
+src_prepare() {
+    edo sed -i Makefile src/Makefile \
+        -e '/images install/d' \
+        -e '/images all/d' \
+        -e '/strip/d'
+}
+
+src_configure() {
+    if ! option device-mapper; then
+        edo sed -i make.vars -e 's|-DDEVMAPPER||g'
+    fi
+}
+
+src_install() {
+    dobin src/lilo
+}
