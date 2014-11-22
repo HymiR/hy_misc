@@ -10,7 +10,7 @@ SLOT="0"
 PLATFORMS="~amd64 ~x86"
 MYOPTIONS="
 	doc
-	installer [[ description = [build installer utilities for the activated firmwares.]]]
+	installer [[ description = [build installer utilities for the activated firmwares.] ]]
 	( firmwares:
 		bios [[ description = [build BIOS loader] ]]
 		efi [[ description = [build EFI loader] ]]
