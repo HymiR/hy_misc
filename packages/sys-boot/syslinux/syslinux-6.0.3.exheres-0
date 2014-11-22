@@ -1,0 +1,43 @@
+# Copyright 2014 by Armin Leghissa <armin@dirty-worms.de>
+# Distributed under the terms of the GNU General Public License v2
+
+SUMMARY="Lightweight bootloaders"
+HOMEPAGE="http://syslinux.zytor.com/"
+DOWNLOADS="mirror://kernel/linux/utils/boot/syslinux/${PNV}.tar.xz"
+
+LICENCES="GPL-2"
+SLOT="0"
+PLATFORMS="~amd64 ~x86"
+MYOPTIONS="doc"
+
+DEPENDENCIES="
+    build:
+        dev-lang/nasm
+    build+run:
+        sys-fs/mtools
+"
+
+#DEFAULT_SRC_PREPARE_PATCHES=( "${FILES}"/${PN}-build_with_newer_kernel_headers.patch )
+
+DEFAULT_SRC_INSTALL_PARAMS=( INSTALLROOT="${IMAGE}"
+                             TFTPBOOT=/usr/share/${PN}/tftpboot
+                             EXTLINUXDIR=/usr/share/${PN}/boot/extlinux/
+                             MANDIR=/usr/share/man )
+
+myemake() {
+    emake OPTFLAGS="${CFLAGS}" \
+          CC="${CC}" AR="${AR}" \
+          "${@}"
+}
+
+src_compile() {
+    myemake LDFLAGS="${LDFLAGS}" installer
+    myemake -C com32/ all
+}
+
+src_install() {
+    default
+	if use doc; then
+    	dodoc doc/*.txt
+	fi
+}
