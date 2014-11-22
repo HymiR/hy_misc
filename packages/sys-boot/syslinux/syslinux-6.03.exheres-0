@@ -11,16 +11,17 @@ PLATFORMS="~amd64 ~x86"
 MYOPTIONS="
 	doc
 	installer [[ description = [ build installer utilities for the activated firmwares. ] ]]
-	firmwares:
+	(
 		bios [[ description = [ build BIOS loader ] ]]
 		efi [[ description = [ build EFI loader ] ]]
+	) [[ number-selected = at-least-one ]]
 "
 
 DEPENDENCIES="
     build:
         dev-lang/nasm
 		sys-kernel/linux-headers
-		firmwares:efi? ( sys-boot/gnu-efi )
+		efi? ( sys-boot/gnu-efi )
     build+run:
         sys-fs/mtools
 "
@@ -53,8 +54,8 @@ src_compile() {
 		die "Incompatible architecture!"
 	fi
 
-	option firmware:efi && firmwares="efi${arch}"
-	option firmwares:bios && firmwares+=" bios"
+	option efi && firmwares="efi${arch}"
+	option bios && firmwares+=" bios"
 	DEFAULT_SRC_INSTALL_PARAMS+=($firmwares)
 
 	option installer && myemake LDFLAGS="${LDFLAGS}" ${firmwares} installer
