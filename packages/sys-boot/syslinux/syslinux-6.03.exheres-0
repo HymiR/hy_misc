@@ -8,21 +8,33 @@ DOWNLOADS="https://www.kernel.org/pub/linux/utils/boot/${PN}/${PNV}.tar.xz"
 LICENCES="GPL-2"
 SLOT="0"
 PLATFORMS="~amd64 ~x86"
-MYOPTIONS="doc"
+MYOPTIONS="
+	doc
+	installer [[ description = [build installer utilities for the activated firmwares.]]]
+	( firmwares:
+		bios [[ description = [build BIOS loader] ]]
+		efi [[ description = [build EFI loader] ]]
+	) [[
+		description = [specify which firmware and appropriate installer to build]
+		number-selected = at-least-one
+	]]
+"
 
 DEPENDENCIES="
     build:
         dev-lang/nasm
+		sys-kernel/linux-headers
+		firmwares:efi? ( sys-boot/gnu-efi )
     build+run:
         sys-fs/mtools
 "
 
 
 DEFAULT_SRC_INSTALL_PARAMS=(
-		INSTALLROOT="${IMAGE}"
-		TFTPBOOT=/usr/share/${PN}/tftpboot
-		EXTLINUXDIR=/usr/share/${PN}/boot/extlinux/
-		MANDIR=/usr/share/man
+	INSTALLROOT="${IMAGE}"
+	TFTPBOOT=/usr/share/${PN}/tftpboot
+	EXTLINUXDIR=/usr/share/${PN}/boot/extlinux/
+	MANDIR=/usr/share/man
 )
 
 
@@ -32,14 +44,29 @@ myemake() {
 		"${@}"
 }
 
+
 src_compile() {
-	myemake LDFLAGS="${LDFLAGS}" installer
-	myemake -C com32/ all
+	local arch
+	local firmwares
+
+	if [ option platform:x86_64 -o option platform:~x86_64 ]; then
+		arch=64
+	elif [ option platform:x86 -o option platform:~x86 ]; then
+		arch=32
+	else
+		die "Incompatible architecture!"
+	fi
+
+	option firmware:efi && firmwares="efi${arch}"
+	option firmwares:bios && firmwares+=" bios"
+	DEFAULT_SRC_INSTALL_PARAMS+=($firmwares)
+
+	option installer && myemake LDFLAGS="${LDFLAGS}" ${firmwares} installer
+	myemake ${firmwares}
 }
+
 
 src_install() {
 	default
-	if use doc; then
-		dodoc doc/*.txt
-	fi
+	option doc && dodoc doc/*.txt
 }
