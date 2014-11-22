@@ -3,7 +3,7 @@
 
 SUMMARY="Lightweight bootloaders"
 HOMEPAGE="http://syslinux.zytor.com/"
-DOWNLOADS="mirror://kernel/linux/utils/boot/syslinux/${PNV}.tar.xz"
+DOWNLOADS="https://www.kernel.org/pub/linux/utils/boot/${PN}/${PNV}.tar.xz"
 
 LICENCES="GPL-2"
 SLOT="0"
