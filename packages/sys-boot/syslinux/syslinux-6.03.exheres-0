@@ -3,7 +3,7 @@
 
 SUMMARY="Lightweight bootloaders"
 HOMEPAGE="http://syslinux.zytor.com/"
-DOWNLOADS="mirror://linux/utils/boot/${PN}/${PNV}.tar.xz"
+DOWNLOADS="https://www.kernel.org/pub/linux/utils/boot/${PN}/${PNV}.tar.xz"
 
 LICENCES="GPL-2"
 SLOT="0"
@@ -17,27 +17,29 @@ DEPENDENCIES="
         sys-fs/mtools
 "
 
-#DEFAULT_SRC_PREPARE_PATCHES=( "${FILES}"/${PN}-build_with_newer_kernel_headers.patch )
 
-DEFAULT_SRC_INSTALL_PARAMS=( INSTALLROOT="${IMAGE}"
-                             TFTPBOOT=/usr/share/${PN}/tftpboot
-                             EXTLINUXDIR=/usr/share/${PN}/boot/extlinux/
-                             MANDIR=/usr/share/man )
+DEFAULT_SRC_INSTALL_PARAMS=(
+		INSTALLROOT="${IMAGE}"
+		TFTPBOOT=/usr/share/${PN}/tftpboot
+		EXTLINUXDIR=/usr/share/${PN}/boot/extlinux/
+		MANDIR=/usr/share/man
+)
+
 
 myemake() {
-    emake OPTFLAGS="${CFLAGS}" \
-          CC="${CC}" AR="${AR}" \
-          "${@}"
+	emake OPTFLAGS="${CFLAGS}" \
+		CC="${CC}" AR="${AR}" \
+		"${@}"
 }
 
 src_compile() {
-    myemake LDFLAGS="${LDFLAGS}" installer
-    myemake -C com32/ all
+	myemake LDFLAGS="${LDFLAGS}" installer
+	myemake -C com32/ all
 }
 
 src_install() {
-    default
+	default
 	if use doc; then
-    	dodoc doc/*.txt
+		dodoc doc/*.txt
 	fi
 }
