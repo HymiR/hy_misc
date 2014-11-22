@@ -11,13 +11,9 @@ PLATFORMS="~amd64 ~x86"
 MYOPTIONS="
 	doc
 	installer [[ description = [ build installer utilities for the activated firmwares. ] ]]
-	( firmwares:
+	firmwares:
 		bios [[ description = [ build BIOS loader ] ]]
 		efi [[ description = [ build EFI loader ] ]]
-	) [[
-		description = [ specify which firmware and appropriate installer to build ]
-		number-selected = at-least-one
-	]]
 "
 
 DEPENDENCIES="
