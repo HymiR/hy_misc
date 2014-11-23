@@ -43,6 +43,11 @@ myemake() {
 
 
 src_compile() {
+	einfo "==== Host Architecture ===="
+	einfo "  PLATFORM:  ${PLATFORM}"
+	einfo "  PLATFORMS: ${PLATFORMS}"
+	einfo "  CHOST:     ${CHOST}"
+	einfo "==========================="
 	local arch
 	local firmwares
 
