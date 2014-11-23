@@ -34,6 +34,11 @@ DEFAULT_SRC_INSTALL_PARAMS=(
 )
 
 
+myemake1() {
+	emake CC="${CC}" AR="${AR}" "${@}"
+}
+
+
 myemake() {
 	emake OPTFLAGS="${CFLAGS}" \
 		CC="${CC}" AR="${AR}" \
@@ -55,8 +60,7 @@ src_compile() {
 	option bios && loaders+=(bios)
 	DEFAULT_SRC_INSTALL_PARAMS+=(${loaders[@]})
 
-	emake spotless
-	myemake ${loaders[@]}
+	myemake1 ${loaders[@]}
 }
 
 
