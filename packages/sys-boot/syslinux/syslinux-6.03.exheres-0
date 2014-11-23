@@ -10,6 +10,7 @@ SLOT="0"
 PLATFORMS="~amd64 ~x86"
 MYOPTIONS="
 	doc
+	perl [[ description = [ build/install perl helper scripts. About to be obsoleted, according utils/Makefile! ] ]]
 	(
 		bios [[ description = [ build BIOS loader ] ]]
 		efi [[ description = [ build EFI loader ] ]]
@@ -23,8 +24,11 @@ DEPENDENCIES="
 		efi? ( sys-boot/gnu-efi )
     build+run:
         sys-fs/mtools
+		perl? (
+			dev-perl/Crypt-PasswdMD5
+			dev-perl/Digest-SHA1
+		)
 "
-
 
 DEFAULT_SRC_INSTALL_PARAMS=(
 	INSTALLROOT="${IMAGE}"
@@ -34,33 +38,59 @@ DEFAULT_SRC_INSTALL_PARAMS=(
 )
 
 
-myemake1() {
-	emake CC="${CC}" AR="${AR}" "${@}"
-}
+DEFAULT_SRC_COMPILE_PARAMS=(
+	LD="${LD}"
+	CC="${CC}"
+	AR="${AR}"
+	OPTFLAGS="${CFLAGS}"
+)
 
 
-myemake() {
-	emake OPTFLAGS="${CFLAGS}" \
-		CC="${CC}" AR="${AR}" \
-		"${@}"
+src_prepare() {
+	# Don't prestrip or override user LDFLAGS, bug #305783
+	local SYSLINUX_MAKEFILES="extlinux/Makefile linux/Makefile mtools/Makefile \
+		sample/Makefile utils/Makefile"
+
+	sed -i ${SYSLINUX_MAKEFILES} -e '/^LDFLAGS/d' || die "sed failed"
+
+	sed -i ${SYSLINUX_MAKEFILES} \
+		-e 's|-g -Os||g' \
+		-e 's|-Os||g' \
+		-e 's|CFLAGS[[:space:]]\+=|CFLAGS +=|g' \
+		|| die "sed inject CFLAGS failed!"
+
+	# Don't build/install scripts if perl is disabled
+	if ! option perl; then
+		sed -i utils/Makefile \
+			-e 's/$(TARGETS)/$(C_TARGETS)/' \
+			-e 's/$(ASIS)//' \
+			|| die "sed remove perl failed!"
+
+		rm man/{lss16toppm.1,ppmtolss16.1,syslinux2ansi.1} || die
+	fi
+
+	case $CHOST in
+		*x86_64*)	arch=64 ;;
+		*i686*)		arch=32 ;;
+		*)			ewarn "Incompatible architecture - building installers only!" ;;
+	esac
+
+	option efi && [[ -n ${arch} ]] && loaders=("efi${arch}")
+	option bios && loaders+=(bios)
+	DEFAULT_SRC_INSTALL_PARAMS+=(${loaders[@]})
+	DEFAULT_SRC_COMPILE_PARAMS+=(${loaders[@]})
 }
 
 
 src_compile() {
-	local efibits
-	local loaders
+	# build system abuses the LDFLAGS variable to pass arguments to ld
+	unset LDFLAGS
 
-	case $CHOST in
-		*x86_64*)	efibits=64 ;;
-		*i686*)		efibits=32 ;;
-		*)			die "Incompatible architectore!" ;;
-	esac
+	if [[ -n ${arch} ]]; then
+		emake ${DEFAULT_SRC_COMPILE_PARAMS[@]}
+	fi
 
-	option efi && loaders=("efi${efibits}")
-	option bios && loaders+=(bios)
-	DEFAULT_SRC_INSTALL_PARAMS+=(${loaders[@]})
-
-	myemake1 ${loaders[@]}
+	emake ${DEFAULT_SRC_COMPILE_PARAMS[@]} installer
 }
 
 
