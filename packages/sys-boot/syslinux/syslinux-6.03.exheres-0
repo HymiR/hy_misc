@@ -46,9 +46,9 @@ src_compile() {
 	local arch
 	local firmwares
 
-	if [ option platform:x86_64 -o option platform:~x86_64 ]; then
+	if [[ $CHOST == *x86_64* ]]; then
 		arch=64
-	elif [ option platform:x86 -o option platform:~x86 ]; then
+	elif [[ $CHOST == *i686* ]]; then
 		arch=32
 	else
 		die "Incompatible architecture!"
