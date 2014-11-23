@@ -10,7 +10,6 @@ SLOT="0"
 PLATFORMS="~amd64 ~x86"
 MYOPTIONS="
 	doc
-	installer [[ description = [ build installer utilities for the activated firmwares. ] ]]
 	(
 		bios [[ description = [ build BIOS loader ] ]]
 		efi [[ description = [ build EFI loader ] ]]
@@ -43,28 +42,21 @@ myemake() {
 
 
 src_compile() {
-	einfo "==== Host Architecture ===="
-	einfo "  PLATFORM:  ${PLATFORM}"
-	einfo "  PLATFORMS: ${PLATFORMS}"
-	einfo "  CHOST:     ${CHOST}"
-	einfo "==========================="
-	local arch
-	local firmwares
+	local efibits
+	local loaders
 
-	if [[ $CHOST == *x86_64* ]]; then
-		arch=64
-	elif [[ $CHOST == *i686* ]]; then
-		arch=32
-	else
-		die "Incompatible architecture!"
-	fi
+	case $CHOST in
+		*x86_64*)	efibits=64 ;;
+		*i686*)		efibits=32 ;;
+		*)			die "Incompatible architectore!" ;;
+	esac
 
-	option efi && firmwares="efi${arch}"
-	option bios && firmwares+=" bios"
-	DEFAULT_SRC_INSTALL_PARAMS+=($firmwares)
+	option efi && loaders=("efi${efibits}")
+	option bios && loaders+=(bios)
+	DEFAULT_SRC_INSTALL_PARAMS+=(${loaders[@]})
 
-	option installer && myemake LDFLAGS="${LDFLAGS}" ${firmwares} installer
-	myemake ${firmwares}
+	emake spotless
+	myemake ${loaders[@]}
 }
 
 
