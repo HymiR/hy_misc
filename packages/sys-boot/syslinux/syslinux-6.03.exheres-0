@@ -30,7 +30,7 @@ DEPENDENCIES="
 		)
 "
 
-DEFAULT_SRC_INSTALL_PARAMS=(
+INSTALL_PARAMS=(
 	INSTALLROOT="${IMAGE}"
 	TFTPBOOT=/usr/share/${PN}/tftpboot
 	EXTLINUXDIR=/usr/share/${PN}/boot/extlinux/
@@ -38,7 +38,7 @@ DEFAULT_SRC_INSTALL_PARAMS=(
 )
 
 
-DEFAULT_SRC_COMPILE_PARAMS=(
+COMPILE_PARAMS=(
 )
 
 
@@ -73,8 +73,8 @@ src_prepare() {
 
 	option efi && [[ -n ${arch} ]] && loaders=("efi${arch}")
 	option bios && loaders+=(bios)
-	DEFAULT_SRC_INSTALL_PARAMS+=(${loaders[@]})
-	DEFAULT_SRC_COMPILE_PARAMS+=(${loaders[@]})
+	INSTALL_PARAMS+=(${loaders[@]})
+	COMPILE_PARAMS+=(${loaders[@]})
 }
 
 
@@ -83,14 +83,14 @@ src_compile() {
 	unset LDFLAGS
 
 	if [[ -n ${arch} ]]; then
-		emake ${DEFAULT_SRC_COMPILE_PARAMS[@]}
+		emake ${COMPILE_PARAMS[@]}
 	fi
 
-	emake ${DEFAULT_SRC_COMPILE_PARAMS[@]} installer
+	emake ${COMPILE_PARAMS[@]} installer
 }
 
 
 src_install() {
-	default
+	emake ${INSTALL_PARAMS[@]} install
 	option doc && dodoc doc/*.txt
 }
